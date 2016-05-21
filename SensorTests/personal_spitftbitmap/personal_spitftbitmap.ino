@@ -41,6 +41,8 @@ as well as Adafruit raw 1.8" TFT display
 
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
+String ardir = " ";
+
 void setup(void) {
   Serial.begin(9600);
 
@@ -58,6 +60,7 @@ void setup(void) {
   Serial.println("OK!");
 
   // change the name here!
+  tft.fillScreen(ST7735_BLACK);
   bmpDraw("parrot.bmp", 0, 0);
   // wait 5 seconds
   delay(5000);
@@ -72,6 +75,16 @@ void loop() {
 //  delay(1000);
 //  tft.setRotation(tft.getRotation() + 1); // Inc rotation 90 degrees
 
+  ardir = "down";
+  
+  bmpDraw("right.bmp", 0, 0);
+  delay(2000);
+  bmpDraw("down.bmp", 0, 0);
+  delay(2000);
+  bmpDraw("left.bmp", 0, 0);
+  delay(2000);
+  bmpDraw("up.bmp", 0, 0);
+  delay(2000);
 }
 
 // This function opens a Windows Bitmap (BMP) file and

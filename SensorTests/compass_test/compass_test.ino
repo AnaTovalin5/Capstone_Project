@@ -30,8 +30,9 @@ void loop(void)
   float Pi = 3.14159;
   
   // Calculate the angle of the vector y,x
-  float heading = (atan2(event.magnetic.y,event.magnetic.x) * 180) / Pi;
-  
+  float heading = (atan2(-event.magnetic.z,-event.magnetic.y) * 180) / Pi;
+  //float heading = (atan2(event.magnetic.y,event.magnetic.x) * 180) / Pi;
+    
   // Normalize to 0-360
   if (heading < 0)
   {

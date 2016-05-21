@@ -1,6 +1,5 @@
 #include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_LSM303_U.h>
+
 #include <Adafruit_GFX.h>    // Core graphics library
 #include <Adafruit_ST7735.h> // Hardware-specific library
 #include <SPI.h>
@@ -12,56 +11,21 @@
 
 #define SD_CS    4  // Chip select line for SD card
 
-/* Assign a unique ID to this sensor at the same time */
-Adafruit_LSM303_Mag_Unified mag = Adafruit_LSM303_Mag_Unified(12345);
-Adafruit_LSM303_Accel_Unified accel = Adafruit_LSM303_Accel_Unified(54321);
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
-const double radians = 57.2958;
+String ardir = " ";
+float heading = 0;
+float starval = 0;
 String direction = "";
+int x = 0;
+String c;
 
-void displaySensorDetails(void)
-{
-  sensor_t sensor;
-  accel.getSensor(&sensor);
-  Serial.println("------------------------------------");
-  Serial.print  ("Sensor:       "); Serial.println(sensor.name);
-  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);
-  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);
-  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" m/s^2");
-  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" m/s^2");
-  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" m/s^2");  
-  Serial.println("------------------------------------");
-  Serial.println("");
-  delay(500);
-}
-
-void setup(void) 
-{
-  #ifndef ESP8266
-    while (!Serial);     // will pause Zero, Leonardo, etc until serial console opens
-  #endif
-
-  Serial.begin(9600);
+void setup() {
+  Wire.begin(8);                // join i2c bus with address #8
+  Wire.onReceive(receiveEvent); // register event
+  Serial.begin(9600);           // start serial for output
 
   tft.initR(INITR_BLACKTAB);
-  
-  Serial.println("Magnetometer and Inclinometer Test"); Serial.println("");
-  
-  /* Initialise the sensor */
-  if(!mag.begin())
-  {
-    /* There was a problem detecting the LSM303 ... check your connections */
-    Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
-    while(1);
-  }
-
-  if(!accel.begin())
-  {
-    /* There was a problem detecting the ADXL345 ... check your connections */
-    Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
-    while(1);
-  }
 
   Serial.print("Initializing SD card...");
   if (!SD.begin(SD_CS)) {
@@ -70,85 +34,44 @@ void setup(void)
   }
   Serial.println("OK!");
 
+  // change the name here!
   tft.fillScreen(ST7735_BLACK);
-  bmpDraw("parrot.bmp", 0, 0);
-  delay(10000);
-
-  /* Display some basic information on this sensor */
-  displaySensorDetails();  
-}
-
-void loop(void) 
-{
-  /* Get a new sensor event */ 
-  sensors_event_t event; 
-  mag.getEvent(&event);
-  accel.getEvent(&event);
-  
-  float Pi = 3.14159;
-  
-  // Calculate the angle of the vector y,x
-  float heading = (atan2(event.magnetic.y,event.magnetic.x) * 180) / Pi;
-  
-  // Normalize to 0-360
-  if (heading < 0)
-  {
-    heading = 360 + heading;
-  }
-
-  tft.fillScreen(ST7735_BLACK);
-  bmpDraw("parrot.bmp", 0 ,0);
-    
-  if (heading >= 0 && heading < 30) {
-    direction = "north";
-    //bmpDraw("left.bmp", 0, 0);
-  } else if (heading >= 30 && heading < 60) {
-    direction = "north-east";
-    //bmpDraw("down.bmp", 0, 0);
-  } else if (heading >= 60 && heading < 120) {
-    direction = "east";
-    //bmpDraw("down.bmp", 0, 0);
-  } else if (heading >= 120 && heading < 150) {
-    direction = "south-east";
-    //bmpDraw("down.bmp", 0, 0);
-  } else if (heading >= 150 && heading < 210) {
-    direction = "south";
-    //bmpDraw("down.bmp", 0, 0);
-  } else if (heading >= 210 && heading < 240) {
-    direction = "south-west";
-    //bmpDraw("up.bmp", 0, 0);
-  } else if (heading >= 240 && heading < 300) {
-    direction = "west";
-    //bmpDraw("up.bmp", 0, 0);
-  } else if (heading >= 300 && heading < 330) {
-    direction = "north-west";
-    //bmpDraw("up.bmp", 0, 0);
-  } else if (heading >= 330) {
-    direction = "north";
-    //bmpDraw("left.bmp", 0, 0);
-  }
-  
-  Serial.println("------------------------------------");
-  Serial.print("Compass Heading: ");
-  Serial.print(heading);Serial.print(" ");Serial.println(direction);
-  /* Display the results (acceleration is measured in m/s^2) */
-  Serial.print("X: "); Serial.print(event.acceleration.x); Serial.print("  ");
-  Serial.print("Y: "); Serial.print(event.acceleration.y); Serial.print("  ");
-  Serial.print("Z: "); Serial.print(event.acceleration.z); Serial.print("  ");Serial.println("m/s^2 ");
-  float tangent = atan2(event.acceleration.x,event.acceleration.z);
-  tangent = tangent * radians;
-  Serial.print("Angle: "); Serial.print(tangent); Serial.println(" degrees ");
-  Serial.println("------------------------------------");
+  //bmpDraw("parrot.bmp", 0, 0);
+  // wait 5 seconds
   delay(5000);
 }
 
-// This function opens a Windows Bitmap (BMP) file and
-// displays it at the given coordinates.  It's sped up
-// by reading many pixels worth of data at a time
-// (rather than pixel by pixel).  Increasing the buffer
-// size takes more of the Arduino's precious RAM but
-// makes loading a little faster.  20 pixels seems a
-// good balance.
+void loop() {
+    Serial.print("x: ");
+    Serial.println(x);
+    if (x == 1) {
+      bmpDraw("right.bmp", 0, 0);
+    } else if (x == 4) {
+      bmpDraw("up.bmp", 0, 0);
+    } else if (x == 5) {
+      bmpDraw("azfound.bmp", 0, 0);
+    } else if (x == 6) {
+      bmpDraw("altfound.bmp", 0, 0);
+    } else if (x == 3) {
+      bmpDraw("down.bmp", 0, 0);
+    } else if (x == 2) {
+      bmpDraw("left.bmp", 0, 0);
+    } else {
+      tft.fillScreen(ST7735_BLACK);
+    }
+    delay(500);
+}
+
+// function that executes whenever data is received from master
+// this function is registered as an event, see setup()
+void receiveEvent(int howMany) {
+  while (1 < Wire.available()) { // loop through all but the last
+    c = Wire.read(); // receive byte as a character
+    Serial.print(c);         // print the character
+  }
+  x = Wire.read();    // receive byte as an integer
+  Serial.println(x);         // print the integer
+}
 
 #define BUFFPIXEL 20
 

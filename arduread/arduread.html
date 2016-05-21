@@ -6,15 +6,13 @@
 
 <template name= "inputData" >
    <form>
-		<input type="text" name="inputDataVal">
+        <select name="constellation">
+          <option value="bigDipper">Big Dipper</option>
+          <option value="littleDipper">Little Dipper</option>
+        </select>
 		<input type="submit" value="Input Data">
    </form>
 <p></p>
-<p></P>
-   <li>
-        <input type="button" class="value1" value="Input Value 1">
-        <input type="button" class="value2" value="Input Value 2">
-   </li>
 </template>
 
 
@@ -24,7 +22,7 @@
 <template name="dataTemp">
 
   <p>
-   {{calculations}}
+   {{lastVal}}
   </p>
 
 

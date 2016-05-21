@@ -1,0 +1,7 @@
+{
+    "galaxy.meteor.com": {
+        "env": {
+            "MONGO_URL": "mongodb://moisesbaez:anatovalin5@ds025752.mlab.com:25752/stars"
+        }
+    }
+}

@@ -1,20 +1,10 @@
-/*************************************************** 
-  This sketch has the Arduino send a basic Get request to a web page
-  
-****************************************************/
- 
 // Import libraries
 #include <Tinysine_CC3000.h>
 #include <ccspi.h>
 #include <SPI.h>
 #include <string.h>
-#include <Wire.h>
-#include <Adafruit_Sensor.h>
-#include <Adafruit_LSM303_U.h>
-
-Adafruit_LSM303_Mag_Unified mag = Adafruit_LSM303_Mag_Unified(12345);
-Adafruit_LSM303_Accel_Unified accel = Adafruit_LSM303_Accel_Unified(54321);
 #include "utility/debug.h"
+#include <Wire.h>
 
 /******************************************************************************
 The following Digital Pins are used by the Wifi shield and should be considered unavailable for *any* other purpose:
@@ -37,15 +27,15 @@ Tinysine_CC3000 cc3000 = Tinysine_CC3000(Tinysine_CC3000_CS, Tinysine_CC3000_IRQ
                                          SPI_CLOCK_DIV2); // you can change this clock speed
 
 //Wifi Network credentials
-#define WLAN_SSID       "Arduino24"           // Network name, cannot be longer than 32 characters!
-#define WLAN_PASS       "KlaatuBaradaNikto"        // Network password
+#define WLAN_SSID       "PUSD_Guest"           // Network name, cannot be longer than 32 characters!
+#define WLAN_PASS       "A+Student"        // Network password
 
 // Security can be WLAN_SEC_UNSEC, WLAN_SEC_WEP, WLAN_SEC_WPA or WLAN_SEC_WPA2
 #define WLAN_SECURITY   WLAN_SEC_WPA2
 
 // What page to grab!
 
-  #define WEBSITE      "ubuntuserver:3000" //domain the Arduino will access
+  #define WEBSITE      "pefarduino2.meteor.com" //domain the Arduino will access
   #define WEBPAGE      "/api/getDat"        // API Get page
 
 
@@ -71,40 +61,25 @@ uint32_t ip;
 
 void setup(void)
 {
-  #ifndef ESP8266
-    while (!Serial);     // will pause Zero, Leonardo, etc until serial console opens
-  #endif
-  Wire.begin();
   Serial.begin(115200);
   Serial.println(F("Hello, CC3000!\n")); 
   Serial.print("Free RAM: ");
   Serial.println(getFreeRam(), DEC);
+
+  Wire.begin(); // join i2c bus (address optional for master)
   
   //Setting output pins, to be controlled via Wifi
   pinMode(7, OUTPUT);
   pinMode(6, OUTPUT);
   
-  /* Initialise the sensor */
-  if(!mag.begin())
-  {
-    /* There was a problem detecting the LSM303 ... check your connections */
-    Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
-    while(1);
-  }
-
-  if(!accel.begin())
-  {
-    /* There was a problem detecting the ADXL345 ... check your connections */
-    Serial.println("Ooops, no LSM303 detected ... Check your wiring!");
-    while(1);
-  }
-    
-  /* Initialise the module */
+  
+  
+ /* Initialise the module */
   connectToSite();
   
-  /* Set initial values */
+/* Set initial values */
   valueSet();
-  
+
 }
 
 
@@ -256,45 +231,26 @@ void valueSet()
 
           lastTime = millis();
 
-        sensors_event_t event; 
-        mag.getEvent(&event);
-        accel.getEvent(&event);
 
-        String temp = "19.27325.3";
-        String altitude = currentLine.substring(0,4);
-        int ialt = altitude.toInt();
-        Serial.print("Altitude: ");
-        Serial.println(ialt);
-        String azimuth = currentLine.substring(4);
-        int iaz = azimuth.toInt();
-// 
-//        float Pi = 3.14159;
-//        const double radians = 57.2958;
-//       
-//        // Calculate the angle of the vector y,x
-//        float heading = (atan2(event.magnetic.y,event.magnetic.x) * 180) / Pi;
-//        float tangent = atan2(event.acceleration.x,event.acceleration.z);
-//        tangent = tangent * radians;
-//        
-//        // Normalize to 0-360
-//        if (heading < 0)
-//        {
-//          heading = 360 + heading;
-//        }
-//      
-//        int y = (int) heading;
-//        y = heading * 1000;
-//        int q = (int) tangent;
-//        int sum = q+y;
-//        String one = String(sum);
-//        
-//        Wire.beginTransmission(8); // transmit to device #8
-//        Wire.write(one);        // sends five bytes
-//        Wire.write(currentLine);              // sends one byte
-//        Wire.endTransmission();    // stop transmitting
-//      
-//        x++;
-        delay(500); 
+
+          //Now we decide what to do with our data
+//           if(getVar>500)
+//                   { 
+//                     digitalWrite(7,HIGH);
+//                     digitalWrite(6,LOW);
+//                   }
+//                   else
+//                   {
+//                     digitalWrite(7,LOW);
+//                     digitalWrite(6,HIGH);
+//                   }
+            Wire.beginTransmission(8); // transmit to device #8
+            Wire.write("x is ");        // sends five bytes
+            Wire.write(getVar);              // sends one byte
+            Wire.endTransmission();    // stop transmitting
+          
+            x++;
+            delay(500); 
                    
      /* The arduReset function is a last resort.
       * When your sketch simply will not loop correctly with the wifi connection, use this to automatically
